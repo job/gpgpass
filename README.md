@@ -7,6 +7,9 @@ The tool will try to use a gpg-agent if it's running. If it's not, you will have
 
 The tool will decrypt a file into memory. If you are worried your computer's memory is not safe, don't use this tool.
 
+By default, the tool will check for an update for itself if the last time since it checked was more then a day ago. It does a simple git pull from remote, if the installation directory is a GIT repository.
+To turn this off, change the automaticupdate settings in ~/.getpass/config.ini.
+
 ## Prerequisites
 * GnuPG
 * GIT
