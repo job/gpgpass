@@ -1,6 +1,6 @@
 # Getpass
-The goal of this tool is to provide an easy but safe way to share passwords amongst (groups of) coworkers.
-It does this by keeping a local GIT repository in sync with a remote. Changes to password files are pushed to the remote and automatically pulled to the local repository.
+The goal of this tool is to provide an easy but safe way to share passwords amongst (groups of) co-workers.
+It does this by keeping a local GIT repository in sync with a remote. Changes to password files are automatically pulled to the local repository.
 **The repository should only contain GPG-encrypted password files!**
 
 The tool will try to use a gpg-agent if it's running. If it's not, you will have to enter the password for your key every time a file is decrypted.
@@ -14,7 +14,7 @@ The tool will try to use a gpg-agent if it's running. If it's not, you will have
 ## Installation
 1. Get the code: git clone https://github.com/rvdh/getpass.git
 2. Run the program for the first time to set up a ~/.getpass/config.ini. 
-3. Change the config.ini setting "passwordsRepositoryRemote" to point to your password repository.
+3. Change the config.ini setting "passwordsRepositoryRemote" to point to your remote password repository.
 
 ## Supported platforms
 The code should work on Linux, MacOS X and Windows, provided git and gnupg are configured correctly. 
@@ -23,26 +23,34 @@ For Windows, ensure git is in $PATH.
 ## Usage
 *Note: all examples here assume the GPG-encoded files can be decoded with your GPG key.*
 
-`getpass username`
+```
+getpass username
+```
 This will search all GPG encrypted files for the string 'username' and display matching lines.
 
-`getpass -f username`
+```
+getpass -f username
+```
 This will search all GPG encrypted files for the string 'username' and display the whole files in which a match was found.
 
-`getpass filename.gpg`
+```
+getpass filename.gpg
+```
 This will search for and display the entire file.
 
 ## Setting up the password repository
 The tool assumes a GIT repository has been setup, containing GPG-encrypted password files. 
 ### Layout
 An example setup looks like this:
+```
 ./repository/Department1/PasswordFile1.gpg
 ./repository/Department1/PasswordFile2.gpg
 ./repository/Department1/PasswordFile3.gpg
 ./repository/Department2/PasswordFile1.gpg
 ./repository/Department2/PasswordFile2.gpg
-
+```
 There's no limit in the amount of subdirectories you create. In our case, the repository looks like this:
+```
 ./Passwords/Engineering/Networking/Switches.gpg
 ./Passwords/Engineering/Networking/Routing.gpg
 ./Passwords/Engineering/Virtualization/Chassis.gpg
@@ -51,8 +59,7 @@ There's no limit in the amount of subdirectories you create. In our case, the re
 ./Passwords/Support/Domainregistries/EURid.gpg
 ./Passwords/Support/Servers/Linux.gpg
 ./Passwords/Support/Servers/Windows.gpg
-
-etc. 
+```
 ### Creating the encrypted files
 To create new GPG encrypted password files, put plaintext password files besides the GPG encrypted files or start out with only plaintext password files.
 Next, you define groups in your ~/.gnupg/gpg.conf:
