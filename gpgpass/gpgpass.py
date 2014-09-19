@@ -1,7 +1,4 @@
-#!/usr/bin/python
-
-# Required: sudo apt-get install python-git python-gnupg
-
+#!/usr/bin/env python
 import os
 import argparse
 import sys
@@ -27,7 +24,7 @@ except ImportError:
 def init():
     global cfg
     cfg = SafeConfigParser()
-    cfgdir = os.path.join(os.path.expanduser("~"), '.getpass')
+    cfgdir = os.path.join(os.path.expanduser("~"), '.gpgpass')
 
     if not os.path.isdir(cfgdir):
         print "Creating %s" % cfgdir
@@ -42,7 +39,7 @@ def init():
     else:
         # Create a default config.ini
         cfg.add_section('Passwords')
-        cfg.set('Passwords', 'passwordsRepository', os.path.join(os.path.expanduser("~"), '.getpass', 'gpg-passwords'))
+        cfg.set('Passwords', 'passwordsRepository', os.path.join(os.path.expanduser("~"), '.gpgpass', 'gpg-passwords'))
         cfg.set('Passwords', 'passwordsRepositoryRemote', "")
         cfg.set('Passwords', 'passwordsSyncInterval', '30')
 
@@ -78,6 +75,8 @@ def init():
         updateRepository(passwordsRepository, passwordsSyncInterval, True)
     else:
         print "WARNING: A remote password repository has not been defined. Edit %s and set passwordsrepositoryremote." % (os.path.join(cfgdir, 'config.ini'))
+
+    return True
 
 def updateRepository(repositoryDirectory, interval, repositoryRemote = None):
 

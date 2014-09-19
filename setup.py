@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2014 Rick van den Hof <r.vandenhof@tiw.nl>
 #
-# This file is part of getpass
+# This file is part of gpgpass
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -53,11 +53,11 @@ install_reqs = parse_requirements('requirements.txt')
 reqs = [str(ir.req) for ir in install_reqs]
 
 setup(
-    name='getpass',
+    name='gpgpass',
     version=version,
     maintainer="Rick van den Hof",
     maintainer_email='r.vandenhof@tiw.nl',
-    url='https://github.com/rvdh/getpass',
+    url='https://github.com/rvdh/gpgpass',
     description='Password manager for groups. Searching thru GPG-encrypted password files.',
     long_description=README,
     license='Apache License, Version 2.0',
@@ -76,6 +76,6 @@ setup(
     setup_requires=['nose', 'coverage'] + reqs,
     packages=find_packages(exclude=['tests', 'tests.*']),
     test_suite='nose.collector',
-    entry_points={'console_scripts': ['getpass = getpass.getpass:main']},
-    py_modules=["getpass.py"],
+    entry_points={'console_scripts': ['gpgpass = gpgpass.gpgpass:main']},
+    py_modules=["gpgpass"],
 )

@@ -1,6 +1,6 @@
-# Getpass
-[![Build Status](https://travis-ci.org/rvdh/getpass.svg?branch=master)](https://travis-ci.org/rvdh/getpass)
-[![Coverage Status](https://coveralls.io/repos/rvdh/getpass/badge.png)](https://coveralls.io/r/rvdh/getpass)
+# Gpgpass
+[![Build Status](https://travis-ci.org/rvdh/gpgpass.svg?branch=master)](https://travis-ci.org/rvdh/gpgpass)
+[![Coverage Status](https://coveralls.io/repos/rvdh/gpgpass/badge.png)](https://coveralls.io/r/rvdh/gpgpass)
 
 The goal of this tool is to provide an easy but safe way to share passwords amongst (groups of) co-workers.
 It does this by keeping a local GIT repository in sync with a remote. Changes to password files are automatically pulled to the local repository.
@@ -11,7 +11,7 @@ The tool will try to use a gpg-agent if it's running. If it's not, you will have
 The tool will decrypt a file into memory. If you are worried your computer's memory is not safe, don't use this tool.
 
 By default, the tool will check for an update for itself if the last time since it checked was more then a day ago. It does a simple git pull from remote, if the installation directory is a GIT repository.
-To turn this off, change the automaticupdate settings in ~/.getpass/config.ini.
+To turn this off, change the automaticupdate settings in ~/.gpgpass/config.ini.
 
 ## Prerequisites
 * GnuPG
@@ -20,10 +20,10 @@ To turn this off, change the automaticupdate settings in ~/.getpass/config.ini.
 * GitPython (https://pythonhosted.org/GitPython/0.3.1/)
 
 ## Installation
-1. Get the code: git clone https://github.com/rvdh/getpass.git
-2. Run the program for the first time to set up a ~/.getpass/config.ini. 
+1. Get the code: git clone https://github.com/rvdh/gpgpass.git
+2. Run the program for the first time to set up a ~/.gpgpass/config.ini. 
 3. Change the config.ini setting "passwordsRepositoryRemote" to point to your remote password repository.
-4. (Optional) Create a symlink from your getpass to ~/bin.
+4. (Optional) Create a symlink from your gpgpass to ~/bin.
 
 ## Supported platforms
 The code should work on Linux, MacOS X and Windows, provided git and gnupg are configured correctly. 
@@ -33,17 +33,17 @@ For Windows, ensure git is in $PATH.
 *Note: all examples here assume the GPG-encoded files can be decoded with your GPG key.*
 
 ```
-getpass username
+gpgpass username
 ```
 This will search all GPG encrypted files for the string 'username' and display matching lines.
 
 ```
-getpass -f username
+gpgpass -f username
 ```
 This will search all GPG encrypted files for the string 'username' and display the whole files in which a match was found.
 
 ```
-getpass filename.gpg
+gpgpass filename.gpg
 ```
 This will search for and display the entire file.
 

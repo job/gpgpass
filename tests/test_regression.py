@@ -29,13 +29,15 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import sys
 import unittest
 
+from gpgpass import gpgpass
+
 import os
 from os.path import dirname, realpath, join
 
 
 class TestGetPass(unittest.TestCase):
-    def test_00__parse_git_repo(self):
-        state = do_something(()
+    def test_00__init(self):
+        state = gpgpass.init()
         self.assertTrue(state)
 
 #        self.assertTrue('radix.Radix' in str(type(tree)))
