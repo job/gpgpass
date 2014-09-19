@@ -5,6 +5,8 @@ It does this by keeping a local GIT repository in sync with a remote. Changes to
 
 The tool will try to use a gpg-agent if it's running. If it's not, you will have to enter the password for your key every time a file is decrypted.
 
+The tool will decrypt a file into memory. If you are worried your computer's memory is not safe, don't use this tool.
+
 ## Prerequisites
 * GnuPG
 * GIT
@@ -37,6 +39,9 @@ This will search all GPG encrypted files for the string 'username' and display t
 getpass filename.gpg
 ```
 This will search for and display the entire file.
+
+## Updating password files
+To change a GPG-encrypted file, I suggest using vim. With the vim addon 'gnupg', you can simply 'vim file.gpg'. It will decrypt the file into memory, you can make your changes and upon quitting the file is encrypted and saved. Next, push your change to the remote.
 
 ## Setting up the password repository
 The tool assumes a GIT repository has been setup, containing GPG-encrypted password files. 
