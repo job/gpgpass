@@ -20,6 +20,7 @@ To turn this off, change the automaticupdate settings in ~/.getpass/config.ini.
 1. Get the code: git clone https://github.com/rvdh/getpass.git
 2. Run the program for the first time to set up a ~/.getpass/config.ini. 
 3. Change the config.ini setting "passwordsRepositoryRemote" to point to your remote password repository.
+4. (Optional) Create a symlink from your getpass to ~/bin.
 
 ## Supported platforms
 The code should work on Linux, MacOS X and Windows, provided git and gnupg are configured correctly. 
