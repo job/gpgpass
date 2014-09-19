@@ -1,4 +1,2 @@
-signal
-stat
 gnupg
-git
+GitPython

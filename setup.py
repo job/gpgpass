@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2014 XXX <XX@XX>
+# Copyright (C) 2014 Rick van den Hof <r.vandenhof@tiw.nl>
 #
 # This file is part of getpass
 #
@@ -55,21 +55,27 @@ reqs = [str(ir.req) for ir in install_reqs]
 setup(
     name='getpass',
     version=version,
-    maintainer="Rick"
-    maintainer_email='rick@SOMETHING',
+    maintainer="Rick van den Hof",
+    maintainer_email='r.vandenhof@tiw.nl',
     url='https://github.com/rvdh/getpass',
-    description='Password manager for groups',
+    description='Password manager for groups. Searching thru GPG-encrypted password files.',
     long_description=README,
-    license='BSD 2-Clause',
-    keywords='python passwords security',
+    license='Apache License, Version 2.0',
+    keywords='python passwords security gpg git',
     classifiers=[
         'Intended Audience :: Developers',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'License :: OSI Approved :: BSD License',
+        'Intended Audience :: System Administrators',
+        'Topic :: Security :: Utilities',
+        'Topic :: Security :: Cryptography',
+        'Environment :: Console',
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 2.7',
+        'Operating System :: OS Independent',
+        'Development Status :: 4 - Beta'
     ],
     setup_requires=['nose', 'coverage'] + reqs,
     packages=find_packages(exclude=['tests', 'tests.*']),
     test_suite='nose.collector',
-    entry_points={'console_scripts': ['getpass = getpass.getpass:main']}
+    entry_points={'console_scripts': ['getpass = getpass.getpass:main']},
+    py_modules=["getpass.py"],
 )

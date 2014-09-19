@@ -1,4 +1,7 @@
 # Getpass
+[![Build Status](https://travis-ci.org/rvdh/getpass.svg?branch=master)](https://travis-ci.org/rvdh/getpass)
+[![Coverage Status](https://coveralls.io/repos/rvdh/getpass/badge.png)](https://coveralls.io/r/rvdh/getpass)
+
 The goal of this tool is to provide an easy but safe way to share passwords amongst (groups of) co-workers.
 It does this by keeping a local GIT repository in sync with a remote. Changes to password files are automatically pulled to the local repository.
 **The repository should only contain GPG-encrypted password files!**
