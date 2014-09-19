@@ -12,14 +12,15 @@ try:
 except ImportError:
     print "ERROR Missing python-gnupg"
     print "Run: easy_install gnupg"
-    exit(1)
+    sys.exit(1)
+
 
 try:
     import git
 except ImportError:
     print "ERROR Missing python-git"
     print "Run: easy_install GitPython"
-    exit(1)
+    sys.exit(1)
 
 def init():
     global cfg
@@ -57,7 +58,7 @@ def init():
     automaticUpdateInterval = int(cfg.get('AutomaticUpdate', 'automaticUpdateInterval'))
     
     if automaticUpdate:
-        updateRepository(os.path.dirname(os.path.realpath(__file__)), automaticUpdateInterval)
+        updateRepository(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir), automaticUpdateInterval)
 
     # Create directory to hold passwords and this script
     if not os.path.isdir(passwordsRepository):
@@ -96,11 +97,14 @@ def updateRepository(repositoryDirectory, interval, repositoryRemote = None):
             print "Fetching latest changes from GIT remote '%s'." % (pwrepo.remotes.origin.url)
             pwrepo.remotes.origin.pull()
 
+        return 1
+
     elif repositoryRemote != None:
         print "GIT Repository not initialised, cloning from '%s'." % (repositoryRemote)
         git.Repo.clone_from(repositoryRemote, repositoryDirectory)
+        return 2
     else:
-        print "Unable to automatically update '%s', it is not a GIT repository." % repositoryDirectory
+        raise StandardError("Unable to automatically update '%s', it is not a GIT repository." % repositoryDirectory)
 
 def seachThruFiles(searchText, showFullFile):
     global cfg

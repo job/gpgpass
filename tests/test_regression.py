@@ -25,10 +25,22 @@ import os
 from os.path import dirname, realpath, join
 
 
-class TestGetPass(unittest.TestCase):
+class TestGpgPass(unittest.TestCase):
     def test_00__init(self):
         state = gpgpass.init()
         self.assertTrue(state)
+
+        # Init again, to pick up the now created config.ini
+        state = gpgpass.init()
+        self.assertTrue(state)
+
+    def test_01__updateRepository(self):
+        state = gpgpass.updateRepository('/tmp/testrepo', 1440, 'https://github.com/rvdh/gpgpass.git')
+        self.assertEqual(state, 2)
+        state = gpgpass.updateRepository('/tmp/testrepo', 1440)
+        self.assertEqual(state, 1)
+        with self.assertRaises(StandardError):
+            state = gpgpass.updateRepository('/tmp', 1440) # /tmp should not be a GIT repo ;)
 
 #        self.assertTrue('radix.Radix' in str(type(tree)))
 #        self.assertEquals(num_nodes_in - num_nodes_del, num_nodes_out)
