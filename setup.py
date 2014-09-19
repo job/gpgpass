@@ -77,5 +77,4 @@ setup(
     packages=find_packages(exclude=['tests', 'tests.*']),
     test_suite='nose.collector',
     entry_points={'console_scripts': ['gpgpass = gpgpass.gpgpass:main']},
-    py_modules=["gpgpass"],
 )
