@@ -48,16 +48,19 @@ def init():
 
         cfg.add_section('AutomaticUpdate')
         cfg.set('AutomaticUpdate', 'automaticUpdate', 'True')
-        cfg.set('AutomaticUpdate', 'automaticUpdateSource', 'https://github.com/rvdh/getpass.git')
+        cfg.set('AutomaticUpdate', 'automaticUpdateInterval', '1440')
 
         with open(os.path.join(cfgdir, 'config.ini'), 'wb') as fh:
             cfg.write(fh)
 
     passwordsRepository = cfg.get('Passwords', 'passwordsRepository')
     passwordsRepositoryRemote = cfg.get('Passwords', 'passwordsRepositoryRemote')
-    passwordsSyncInterval = cfg.get('Passwords', 'passwordsSyncInterval')
+    passwordsSyncInterval = int(cfg.get('Passwords', 'passwordsSyncInterval'))
     automaticUpdate = cfg.get('AutomaticUpdate', 'automaticUpdate')
-    automaticUpdateSource = cfg.get('AutomaticUpdate', 'automaticUpdateSource')
+    automaticUpdateInterval = int(cfg.get('AutomaticUpdate', 'automaticUpdateInterval'))
+    
+    if automaticUpdate:
+        updateRepository(os.path.dirname(os.path.realpath(__file__)), automaticUpdateInterval)
 
     # Create directory to hold passwords and this script
     if not os.path.isdir(passwordsRepository):
@@ -72,24 +75,31 @@ def init():
 
     # Pull the latest version of password files
     if passwordsRepositoryRemote != "":
-        if os.path.isdir(os.path.join(passwordsRepository, ".git")):
-            # Repo has been cloned before, pull latest changes, but only if more then passwordsSyncInterval minutes ago
-            doSync = False
-            if os.path.isfile(os.path.join(passwordsRepository, ".git", "FETCH_HEAD")): # File doesn't exist when a fetch hasn't happened yet
-                mtime = os.stat(os.path.join(passwordsRepository, ".git", "FETCH_HEAD"))[stat.ST_MTIME]
-                lastdt = datetime.fromtimestamp(mtime)
-                if datetime.now() - lastdt > timedelta(minutes=30):
-                    doSync = True
-            else:
-                doSync = True
+        updateRepository(passwordsRepository, passwordsSyncInterval, True)
 
-            if doSync:
-                print "Fetching latest changes from GIT remote '%s'." % (passwordsRepositoryRemote)
-                pwrepo = git.Repo(passwordsRepository)
-                pwrepo.remotes.origin.pull()
+def updateRepository(repositoryDirectory, interval, repositoryRemote = None):
+
+    if os.path.isdir(os.path.join(repositoryDirectory, ".git")):
+        # Repo has been cloned before, pull latest changes, but only if more then passwordsSyncInterval minutes ago
+        doSync = False
+        if os.path.isfile(os.path.join(repositoryDirectory, ".git", "FETCH_HEAD")): # File doesn't exist when a fetch hasn't happened yet
+            mtime = os.stat(os.path.join(repositoryDirectory, ".git", "FETCH_HEAD"))[stat.ST_MTIME]
+            lastdt = datetime.fromtimestamp(mtime)
+            if datetime.now() - lastdt > timedelta(minutes=interval):
+                doSync = True
         else:
-            print "GIT Repository not initialised, cloning from '%s'." % (passwordsRepositoryRemote)
-            pwrepo = git.Repo.clone_from(passwordsRepositoryRemote, passwordsRepository)
+            doSync = True
+
+        if doSync:
+            pwrepo = git.Repo(repositoryDirectory)
+            print "Fetching latest changes from GIT remote '%s'." % (pwrepo.remotes.origin.url)
+            pwrepo.remotes.origin.pull()
+
+    elif repositoryRemote != None:
+        print "GIT Repository not initialised, cloning from '%s'." % (repositoryRemote)
+        git.Repo.clone_from(repositoryRemote, repositoryDirectory)
+    else:
+        print "Unable to automatically update '%s', it is not a GIT repository." % repositoryDirectory
 
 def seachThruFiles(searchText, showFullFile):
     global cfg
