@@ -64,6 +64,7 @@ setup(
         'Development Status :: 4 - Beta'
     ],
     setup_requires=['nose', 'coverage'] + reqs,
+    install_requires=reqs,
     packages=find_packages(exclude=['tests', 'tests.*']),
     test_suite='nose.collector',
     entry_points={'console_scripts': ['gpgpass = gpgpass.gpgpass:main']},

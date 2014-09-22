@@ -1,3 +1,2 @@
 python-gnupg==0.3.6
 GitPython==0.3.2RC1
-pip
