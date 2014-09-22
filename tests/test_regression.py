@@ -112,9 +112,8 @@ class TestGpgPass(unittest.TestCase):
         shutil.rmtree('/tmp/gpgpasstest03-pwrepo.%s' % os.getpid())
 
     def test_04__parseargs(self):
-        with self.assertRaises(SystemExit) as cm:
-            gpgpass.parse_args()
-        self.assertEqual(cm.exception.code, 2)
+        state = gpgpass.parse_args(['foo'])
+        self.assertEqual(state.searchText, 'foo')
 
 
 
