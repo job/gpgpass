@@ -55,7 +55,7 @@ setup(
     classifiers=[
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
-        'Topic :: Security :: Utilities',
+        'Topic :: Utilities',
         'Topic :: Security :: Cryptography',
         'Environment :: Console',
         'License :: OSI Approved :: Apache Software License',
