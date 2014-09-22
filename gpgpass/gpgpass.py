@@ -73,7 +73,7 @@ def init():
 
     # Pull the latest version of password files
     if passwordsRepositoryRemote != "":
-        updateRepository(passwordsRepository, passwordsSyncInterval, True)
+        updateRepository(passwordsRepository, passwordsSyncInterval, passwordsRepositoryRemote)
     else:
         print "WARNING: A remote password repository has not been defined. Edit %s and set passwordsrepositoryremote." % (os.path.join(cfgdir, 'config.ini'))
 
