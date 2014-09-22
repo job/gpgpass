@@ -22,25 +22,75 @@ import unittest
 from gpgpass import gpgpass
 
 import os
+import shutil
 from os.path import dirname, realpath, join
 
 
 class TestGpgPass(unittest.TestCase):
-    def test_00__init(self):
-        state = gpgpass.init()
+    def test_00__imports(self):
+        # clear PATH to force failing to find the module
+        path = sys.path
+        sys.path = []
+        with self.assertRaises(SystemExit) as cm:
+            state = gpgpass.importGnuPG()
+        self.assertEqual(cm.exception.code, 1)
+        with self.assertRaises(SystemExit) as cm:
+            state = gpgpass.importGit()
+        self.assertEqual(cm.exception.code, 1)
+
+        # Restore PATH
+        sys.path = path
+
+    def test_01__init(self):
+        state = gpgpass.init('/tmp/gpgpasscfg.%s' % os.getpid(), '/tmp/gpgpasscfg-pwrepo.%s' % os.getpid())
         self.assertTrue(state)
 
         # Init again, to pick up the now created config.ini
-        state = gpgpass.init()
+        state = gpgpass.init('/tmp/gpgpasscfg.%s' % os.getpid(), '/tmp/gpgpasscfg-pwrepo.%s' % os.getpid())
         self.assertTrue(state)
 
-    def test_01__updateRepository(self):
-        state = gpgpass.updateRepository('/tmp/testrepo', 1440, 'https://github.com/rvdh/gpgpass.git')
+        # Init with an invalid path
+        with self.assertRaises(SystemExit) as cm:
+            state = gpgpass.init('/tmp/gpgpasscfg-proc.%s' % os.getpid(), '/proc/foo')
+        self.assertEqual(cm.exception.code, 1)
+
+        # Remove the tmp config dir
+        shutil.rmtree('/tmp/gpgpasscfg.%s' % os.getpid())
+        shutil.rmtree('/tmp/gpgpasscfg-proc.%s' % os.getpid())
+        shutil.rmtree('/tmp/gpgpasscfg-pwrepo.%s' % os.getpid())
+
+    def test_02__updateRepository(self):
+        state = gpgpass.updateRepository('/tmp/testrepo.%s' % os.getpid(), 1440, 'https://github.com/rvdh/gpgpass.git')
         self.assertEqual(state, 2)
-        state = gpgpass.updateRepository('/tmp/testrepo', 1440)
+        state = gpgpass.updateRepository('/tmp/testrepo.%s' % os.getpid(), 1440)
         self.assertEqual(state, 1)
+        # Remove the temp repo
+        shutil.rmtree('/tmp/testrepo.%s' % os.getpid())
+
         with self.assertRaises(StandardError):
             state = gpgpass.updateRepository('/tmp', 1440) # /tmp should not be a GIT repo ;)
+
+    def test_03__searchThruFiles(self):
+        gpgpass.init('/tmp/gpgpasstest03.%s' % os.getpid(), '/tmp/gpgpasstest03-pwrepo.%s' % os.getpid())
+
+        # Copy the test file
+        shutil.copyfile("./tests/gpg/testfile.gpg", '/tmp/gpgpasstest03-pwrepo.%s/testfile.gpg' % os.getpid())
+
+        self.assertTrue(gpgpass.searchThruFiles("search", False, os.path.join(os.path.dirname(os.path.realpath(__file__)), "gpg")))
+        self.assertTrue(gpgpass.searchThruFiles("search", True, os.path.join(os.path.dirname(os.path.realpath(__file__)), "gpg")))
+
+        # Test for whole file
+        with self.assertRaises(SystemExit) as cm:
+            gpgpass.searchThruFiles("testfile.gpg", True, os.path.join(os.path.dirname(os.path.realpath(__file__)), "gpg"))
+        self.assertEqual(cm.exception.code, 0)
+
+    def test_04__parseargs(self):
+        with self.assertRaises(SystemExit) as cm:
+            gpgpass.parse_args()
+        self.assertEqual(cm.exception.code, 2)
+
+
+
 
 #        self.assertTrue('radix.Radix' in str(type(tree)))
 #        self.assertEquals(num_nodes_in - num_nodes_del, num_nodes_out)

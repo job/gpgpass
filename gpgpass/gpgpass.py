@@ -7,40 +7,40 @@ from datetime import datetime, timedelta
 from ConfigParser import SafeConfigParser
 import stat
 
-try:
-    import gnupg
-except ImportError:
-    print "ERROR Missing python-gnupg"
-    print "Run: easy_install gnupg"
-    sys.exit(1)
+def importGnuPG():
+    try:
+        import gnupg
+    except ImportError:
+        print "ERROR Missing python-gnupg"
+        print "Run: easy_install gnupg"
+        sys.exit(1)
 
+def importGit():
+    try:
+        import git
+    except ImportError:
+        print "ERROR Missing python-git"
+        print "Run: easy_install GitPython"
+        sys.exit(1)
 
-try:
-    import git
-except ImportError:
-    print "ERROR Missing python-git"
-    print "Run: easy_install GitPython"
-    sys.exit(1)
-
-def init():
+def init(configDir, passwordsRepository):
     global cfg
     cfg = SafeConfigParser()
-    cfgdir = os.path.join(os.path.expanduser("~"), '.gpgpass')
 
-    if not os.path.isdir(cfgdir):
-        print "Creating %s" % cfgdir
-        os.mkdir(cfgdir, 0700)
+    if not os.path.isdir(configDir):
+        print "Creating %s" % configDir
+        os.mkdir(configDir, 0700)
     else:
         # Ensure proper permissions
-        os.chmod(cfgdir, 0700)
+        os.chmod(configDir, 0700)
           
-    if os.path.isfile(os.path.join(cfgdir, 'config.ini')):
-        cfg.read(os.path.join(cfgdir, 'config.ini'))
+    if os.path.isfile(os.path.join(configDir, 'config.ini')):
+        cfg.read(os.path.join(configDir, 'config.ini'))
 
     else:
         # Create a default config.ini
         cfg.add_section('Passwords')
-        cfg.set('Passwords', 'passwordsRepository', os.path.join(os.path.expanduser("~"), '.gpgpass', 'gpg-passwords'))
+        cfg.set('Passwords', 'passwordsRepository', passwordsRepository)
         cfg.set('Passwords', 'passwordsRepositoryRemote', "")
         cfg.set('Passwords', 'passwordsSyncInterval', '30')
 
@@ -48,7 +48,7 @@ def init():
         cfg.set('AutomaticUpdate', 'automaticUpdate', 'True')
         cfg.set('AutomaticUpdate', 'automaticUpdateInterval', '1440')
 
-        with open(os.path.join(cfgdir, 'config.ini'), 'wb') as fh:
+        with open(os.path.join(configDir, 'config.ini'), 'wb') as fh:
             cfg.write(fh)
 
     passwordsRepository = cfg.get('Passwords', 'passwordsRepository')
@@ -64,8 +64,8 @@ def init():
     if not os.path.isdir(passwordsRepository):
         try:
             os.makedirs(passwordsRepository, 0700)
-        except StandardError, e:
-            print "Unable to create the path '%s': %s.\nCreate the path manually (remember permissions) or change the passwordsRepository setting." % (passwordsRepository, e)
+        except:
+            print "Unable to create the path '%s': %s.\nCreate the path manually (remember permissions) or change the passwordsRepository setting." % (passwordsRepository, 'fo')
             sys.exit(1)
 
     # Ensure correct permissions
@@ -75,11 +75,12 @@ def init():
     if passwordsRepositoryRemote != "":
         updateRepository(passwordsRepository, passwordsSyncInterval, passwordsRepositoryRemote)
     else:
-        print "WARNING: A remote password repository has not been defined. Edit %s and set passwordsrepositoryremote." % (os.path.join(cfgdir, 'config.ini'))
+        print "WARNING: A remote password repository has not been defined. Edit %s and set passwordsrepositoryremote." % (os.path.join(configDir, 'config.ini'))
 
     return True
 
 def updateRepository(repositoryDirectory, interval, repositoryRemote = None):
+    import git
 
     if os.path.isdir(os.path.join(repositoryDirectory, ".git")):
         # Repo has been cloned before, pull latest changes, but only if more then passwordsSyncInterval minutes ago
@@ -106,9 +107,10 @@ def updateRepository(repositoryDirectory, interval, repositoryRemote = None):
     else:
         raise StandardError("Unable to automatically update '%s', it is not a GIT repository." % repositoryDirectory)
 
-def seachThruFiles(searchText, showFullFile):
+def searchThruFiles(searchText, showFullFile, GnuPGHome = None):
+    import gnupg
     global cfg
-    gpg = gnupg.GPG(use_agent=True)
+    gpg = gnupg.GPG(use_agent=True, gnupghome = GnuPGHome)
 
     # Iterate over all files in directories in passwordsRepository
     for root, dirs, files in os.walk(cfg.get('Passwords', 'passwordsRepository')):
@@ -148,12 +150,22 @@ def seachThruFiles(searchText, showFullFile):
 
                 if quitAfterDisplay:
                     sys.exit(0)
+
+    return True
+
+def parse_args(arguments = None):
         
-if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Search thru GPG encrypted password files.')
     parser.add_argument("searchText", help='Scan decrypted GPG files for this text.')
     parser.add_argument("-f", help='Show the entire file when a match is found.', dest='showFullFile', action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(arguments)
 
-    init()
-    seachThruFiles(args.searchText, args.showFullFile)
+    return args
+
+def main():
+    args = parse_args()
+    init(os.path.join(os.path.expanduser("~"), '.gpgpass'), os.path.join(os.path.expanduser("~"), '.gpgpass', 'gpg-passwords'))
+    searchThruFiles(args.searchText, args.showFullFile)
+
+if __name__ == "__main__":
+    main()
