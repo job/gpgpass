@@ -101,7 +101,7 @@ def updateRepository(repositoryDirectory, interval, repositoryRemote = None):
 def searchThruFiles(searchText, showFullFile, GnuPGHome = None):
     import gnupg
     global cfg
-    gpg = gnupg.GPG(use_agent=True, gnupghome = GnuPGHome)
+    gpg = gnupg.GPG(use_agent=True, homedir = GnuPGHome)
 
     # Iterate over all files in directories in passwordsRepository
     for root, dirs, files in os.walk(cfg.get('Passwords', 'passwordsRepository')):
