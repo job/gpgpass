@@ -20,6 +20,7 @@ import sys
 import unittest
 
 from gpgpass import gpgpass
+from ConfigParser import SafeConfigParser
 
 import os
 import shutil
@@ -54,6 +55,17 @@ class TestGpgPass(unittest.TestCase):
             state = gpgpass.init('/tmp/gpgpasscfg-proc.%s' % os.getpid(), '/proc/foo')
         self.assertEqual(cm.exception.code, 1)
 
+        # https://github.com/rvdh/gpgpass_passwords.git
+        cfg = SafeConfigParser()
+        cfg.read(os.path.join('/tmp/gpgpasscfg.%s' % os.getpid(), 'config.ini'))
+        cfg.set('Passwords', 'passwordsRepositoryRemote', 'https://github.com/rvdh/gpgpass_passwords.git')
+        with open(os.path.join('/tmp/gpgpasscfg.%s' % os.getpid(), 'config.ini'), 'wb') as fh:
+            cfg.write(fh)
+
+        # Run the test again, now with a remote
+        state = gpgpass.init('/tmp/gpgpasscfg.%s' % os.getpid(), '/tmp/gpgpasscfg-pwrepo.%s' % os.getpid())
+        self.assertTrue(state)
+
         # Remove the tmp config dir
         shutil.rmtree('/tmp/gpgpasscfg.%s' % os.getpid())
         shutil.rmtree('/tmp/gpgpasscfg-proc.%s' % os.getpid())
@@ -64,6 +76,9 @@ class TestGpgPass(unittest.TestCase):
         self.assertEqual(state, 2)
         state = gpgpass.updateRepository('/tmp/testrepo.%s' % os.getpid(), 1440)
         self.assertEqual(state, 1)
+        state = gpgpass.updateRepository('/tmp/testrepo.%s' % os.getpid(), 0)
+        self.assertEqual(state, 1)
+
         # Remove the temp repo
         shutil.rmtree('/tmp/testrepo.%s' % os.getpid())
 
@@ -72,9 +87,17 @@ class TestGpgPass(unittest.TestCase):
 
     def test_03__searchThruFiles(self):
         gpgpass.init('/tmp/gpgpasstest03.%s' % os.getpid(), '/tmp/gpgpasstest03-pwrepo.%s' % os.getpid())
+        cfg = SafeConfigParser()
+        cfg.read(os.path.join('/tmp/gpgpasstest03.%s' % os.getpid(), 'config.ini'))
+        cfg.set('Passwords', 'passwordsRepositoryRemote', 'https://github.com/rvdh/gpgpass_passwords.git')
+        with open(os.path.join('/tmp/gpgpasstest03.%s' % os.getpid(), 'config.ini'), 'wb') as fh:
+            cfg.write(fh)
+
+        # Check out the repository
+        gpgpass.init('/tmp/gpgpasstest03.%s' % os.getpid(), '/tmp/gpgpasstest03-pwrepo.%s' % os.getpid())
 
         # Copy the test file
-        shutil.copyfile("./tests/gpg/testfile.gpg", '/tmp/gpgpasstest03-pwrepo.%s/testfile.gpg' % os.getpid())
+        #shutil.copyfile("/tmp/gpgpasstest03-pwrepo.%s/testfile.gpg" % os.getpid(), '/tmp/gpgpasstest03-pwrepo.%s/testfile.gpg' % os.getpid())
 
         self.assertTrue(gpgpass.searchThruFiles("search", False, os.path.join(os.path.dirname(os.path.realpath(__file__)), "gpg")))
         self.assertTrue(gpgpass.searchThruFiles("search", True, os.path.join(os.path.dirname(os.path.realpath(__file__)), "gpg")))
@@ -83,6 +106,10 @@ class TestGpgPass(unittest.TestCase):
         with self.assertRaises(SystemExit) as cm:
             gpgpass.searchThruFiles("testfile.gpg", True, os.path.join(os.path.dirname(os.path.realpath(__file__)), "gpg"))
         self.assertEqual(cm.exception.code, 0)
+
+        # Remove the temp repo
+        shutil.rmtree('/tmp/gpgpasstest03.%s' % os.getpid())
+        shutil.rmtree('/tmp/gpgpasstest03-pwrepo.%s' % os.getpid())
 
     def test_04__parseargs(self):
         with self.assertRaises(SystemExit) as cm:

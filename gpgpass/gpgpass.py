@@ -44,21 +44,12 @@ def init(configDir, passwordsRepository):
         cfg.set('Passwords', 'passwordsRepositoryRemote', "")
         cfg.set('Passwords', 'passwordsSyncInterval', '30')
 
-        cfg.add_section('AutomaticUpdate')
-        cfg.set('AutomaticUpdate', 'automaticUpdate', 'True')
-        cfg.set('AutomaticUpdate', 'automaticUpdateInterval', '1440')
-
         with open(os.path.join(configDir, 'config.ini'), 'wb') as fh:
             cfg.write(fh)
 
     passwordsRepository = cfg.get('Passwords', 'passwordsRepository')
     passwordsRepositoryRemote = cfg.get('Passwords', 'passwordsRepositoryRemote')
     passwordsSyncInterval = int(cfg.get('Passwords', 'passwordsSyncInterval'))
-    automaticUpdate = cfg.get('AutomaticUpdate', 'automaticUpdate')
-    automaticUpdateInterval = int(cfg.get('AutomaticUpdate', 'automaticUpdateInterval'))
-    
-    if automaticUpdate:
-        updateRepository(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir), automaticUpdateInterval)
 
     # Create directory to hold passwords and this script
     if not os.path.isdir(passwordsRepository):
