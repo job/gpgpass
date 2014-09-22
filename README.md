@@ -20,10 +20,8 @@ To turn this off, change the automaticupdate settings in ~/.gpgpass/config.ini.
 * GitPython (https://pythonhosted.org/GitPython/0.3.1/)
 
 ## Installation
-1. Get the code: git clone https://github.com/rvdh/gpgpass.git
-2. Run the program for the first time to set up a ~/.gpgpass/config.ini. 
-3. Change the config.ini setting "passwordsRepositoryRemote" to point to your remote password repository.
-4. (Optional) Create a symlink from your gpgpass to ~/bin.
+1. pip install gpgpass
+2. Change the config.ini setting "passwordsRepositoryRemote" to point to your remote password repository.
 
 ## Supported platforms
 The code should work on Linux, MacOS X and Windows, provided git and gnupg are configured correctly. 
