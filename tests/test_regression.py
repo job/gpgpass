@@ -28,19 +28,19 @@ from os.path import dirname, realpath, join
 
 
 class TestGpgPass(unittest.TestCase):
-    def test_00__imports(self):
-        # clear PATH to force failing to find the module
-        path = sys.path
-        sys.path = []
-        with self.assertRaises(SystemExit) as cm:
-            state = gpgpass.importGnuPG()
-        self.assertEqual(cm.exception.code, 1)
-        with self.assertRaises(SystemExit) as cm:
-            state = gpgpass.importGit()
-        self.assertEqual(cm.exception.code, 1)
-
-        # Restore PATH
-        sys.path = path
+#    def test_00__imports(self):
+#        # clear PATH to force failing to find the module
+#        path = sys.path
+#        sys.path = []
+#        with self.assertRaises(SystemExit) as cm:
+#            state = gpgpass.importGnuPG()
+#        self.assertEqual(cm.exception.code, 1)
+#        with self.assertRaises(SystemExit) as cm:
+#            state = gpgpass.importGit()
+ #       self.assertEqual(cm.exception.code, 1)
+#
+#        # Restore PATH
+#        sys.path = path
 
     def test_01__init(self):
         state = gpgpass.init('/tmp/gpgpasscfg.%s' % os.getpid(), '/tmp/gpgpasscfg-pwrepo.%s' % os.getpid())

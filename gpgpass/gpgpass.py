@@ -2,26 +2,25 @@
 import os
 import argparse
 import sys
-import signal
 from datetime import datetime, timedelta
 from ConfigParser import SafeConfigParser
 import stat
 
-def importGnuPG():
-    try:
-        import gnupg
-    except ImportError:
-        print "ERROR Missing python-gnupg"
-        print "Run: easy_install gnupg"
-        sys.exit(1)
 
-def importGit():
-    try:
-        import git
-    except ImportError:
-        print "ERROR Missing python-git"
-        print "Run: easy_install GitPython"
-        sys.exit(1)
+try:
+    import gnupg
+except ImportError:
+    print "ERROR Missing python-gnupg"
+    print "Run: easy_install gnupg"
+    sys.exit(2)
+
+try:
+    import git
+except ImportError:
+    print "ERROR Missing python-git"
+    print "Run: easy_install git"
+    sys.exit(2)
+
 
 def init(configDir, passwordsRepository):
     global cfg
@@ -33,7 +32,7 @@ def init(configDir, passwordsRepository):
     else:
         # Ensure proper permissions
         os.chmod(configDir, 0700)
-          
+
     if os.path.isfile(os.path.join(configDir, 'config.ini')):
         cfg.read(os.path.join(configDir, 'config.ini'))
 
@@ -48,15 +47,19 @@ def init(configDir, passwordsRepository):
             cfg.write(fh)
 
     passwordsRepository = cfg.get('Passwords', 'passwordsRepository')
-    passwordsRepositoryRemote = cfg.get('Passwords', 'passwordsRepositoryRemote')
-    passwordsSyncInterval = int(cfg.get('Passwords', 'passwordsSyncInterval'))
+    passwordsRepositoryRemote = cfg.get('Passwords',
+                                        'passwordsRepositoryRemote')
+    passwordsSyncInterval = int(cfg.get('Passwords',
+                                        'passwordsSyncInterval'))
 
     # Create directory to hold passwords and this script
     if not os.path.isdir(passwordsRepository):
         try:
             os.makedirs(passwordsRepository, 0700)
         except:
-            print "Unable to create the path '%s': %s.\nCreate the path manually (remember permissions) or change the passwordsRepository setting." % (passwordsRepository, 'fo')
+            print "Unable to create the path '%s': %s.\nCreate the path \
+manually (remember permissions) or change the passwordsRepository \
+setting." % (passwordsRepository, 'fo')
             sys.exit(1)
 
     # Ensure correct permissions
@@ -64,19 +67,24 @@ def init(configDir, passwordsRepository):
 
     # Pull the latest version of password files
     if passwordsRepositoryRemote != "":
-        updateRepository(passwordsRepository, passwordsSyncInterval, passwordsRepositoryRemote)
+        updateRepository(passwordsRepository, passwordsSyncInterval,
+                         passwordsRepositoryRemote)
     else:
-        print "WARNING: A remote password repository has not been defined. Edit %s and set passwordsrepositoryremote." % (os.path.join(configDir, 'config.ini'))
+        print "WARNING: A remote password repository has not been defined. \
+Edit %s and set passwordsrepositoryremote." \
+            % (os.path.join(configDir, 'config.ini'))
 
     return True
 
-def updateRepository(repositoryDirectory, interval, repositoryRemote = None):
-    import git
+
+def updateRepository(repositoryDirectory, interval, repositoryRemote=None):
 
     if os.path.isdir(os.path.join(repositoryDirectory, ".git")):
-        # Repo has been cloned before, pull latest changes, but only if more then passwordsSyncInterval minutes ago
+        # Repo has been cloned before, pull latest changes, but only if
+        # more then passwordsSyncInterval minutes ago
         doSync = False
-        if os.path.isfile(os.path.join(repositoryDirectory, ".git", "FETCH_HEAD")): # File doesn't exist when a fetch hasn't happened yet
+        # File doesn't exist when a fetch hasn't happened yet
+        if os.path.isfile(os.path.join(repositoryDirectory, ".git", "FETCH_HEAD")):
             mtime = os.stat(os.path.join(repositoryDirectory, ".git", "FETCH_HEAD"))[stat.ST_MTIME]
             lastdt = datetime.fromtimestamp(mtime)
             if datetime.now() - lastdt > timedelta(minutes=interval):
@@ -86,76 +94,86 @@ def updateRepository(repositoryDirectory, interval, repositoryRemote = None):
 
         if doSync:
             pwrepo = git.Repo(repositoryDirectory)
-            print "Fetching latest changes from GIT remote '%s'." % (pwrepo.remotes.origin.url)
+            print "Fetching latest changes from GIT remote '%s'." \
+                % (pwrepo.remotes.origin.url)
             pwrepo.remotes.origin.pull()
 
         return 1
 
-    elif repositoryRemote != None:
-        print "GIT Repository not initialised, cloning from '%s'." % (repositoryRemote)
+    elif repositoryRemote is not None:
+        print "GIT Repository not initialised, cloning from '%s'." \
+            % (repositoryRemote)
         git.Repo.clone_from(repositoryRemote, repositoryDirectory)
         return 2
     else:
-        raise StandardError("Unable to automatically update '%s', it is not a GIT repository." % repositoryDirectory)
+        raise StandardError("Unable to automatically update '%s', \
+it is not a GIT repository." % repositoryDirectory)
 
-def searchThruFiles(searchText, showFullFile, GnuPGHome = None):
-    import gnupg
+
+def searchThruFiles(searchText, showFullFile, GnuPGHome=None):
     global cfg
-    gpg = gnupg.GPG(use_agent=True, gnupghome = GnuPGHome)
+    gpg = gnupg.GPG(use_agent=True, gnupghome=GnuPGHome)
 
     # Iterate over all files in directories in passwordsRepository
     for root, dirs, files in os.walk(cfg.get('Passwords', 'passwordsRepository')):
-        if not root.endswith(".git"):
-            for name in files:
-                # Try to decode the file with gpg
-                quitAfterDisplay = False
-                if name.lower() == searchText.lower():
-                    searchText = ""
-                    quitAfterDisplay = True
+        if root.endswith(".git"):
+            continue
+        for name in files:
+            # Try to decode the file with gpg
+            quitAfterDisplay = False
+            if name.lower() == searchText.lower():
+                searchText = ""
+                quitAfterDisplay = True
 
-                try:
-                    with open(os.path.join(root, name)) as fh:
-                        decrypted_data = gpg.decrypt_file(fh)
-                    
-                        if not quitAfterDisplay:
-                            namePrinted = False
-                            for line in str(decrypted_data).splitlines():
-                                if searchText.lower() in line.lower():
-                                    if not namePrinted:
-                                        print "---------- %s ----------" % name
-                                        namePrinted = True
-                                    if showFullFile:
-                                        print str(decrypted_data)
-                                    else:
-                                        print line
+            try:
+                with open(os.path.join(root, name)) as fh:
+                    decrypted_data = gpg.decrypt_file(fh)
 
-                            if namePrinted:
-                                print "\n"
-                        else:
-                            content = str(decrypted_data)
-                            print "---------- %s ----------" % name
-                            print content
+                    if not quitAfterDisplay:
+                        namePrinted = False
+                        for line in str(decrypted_data).splitlines():
+                            if searchText.lower() in line.lower():
+                                if not namePrinted:
+                                    print "---------- %s ----------" % name
+                                    namePrinted = True
+                                if showFullFile:
+                                    print str(decrypted_data)
+                                else:
+                                    print line
+
+                        if namePrinted:
                             print "\n"
-                except StandardError, e:
-                    print "Error decrypting %s: %s" % (os.path.join(root, name), e)
+                    else:
+                        content = str(decrypted_data)
+                        print "---------- %s ----------" % name
+                        print content
+                        print "\n"
+            except StandardError, e:
+                print "Error decrypting %s: %s" % (os.path.join(root, name), e)
 
-                if quitAfterDisplay:
-                    sys.exit(0)
+            if quitAfterDisplay:
+                sys.exit(0)
 
     return True
 
-def parse_args(arguments = None):
-        
+
+def parse_args(arguments=None):
+
     parser = argparse.ArgumentParser(description='Search thru GPG encrypted password files.')
-    parser.add_argument("searchText", help='Scan decrypted GPG files for this text.')
-    parser.add_argument("-f", help='Show the entire file when a match is found.', dest='showFullFile', action='store_true')
+    parser.add_argument("searchText",
+                        help='Scan decrypted GPG files for this text.')
+    parser.add_argument("-f",
+                        help='Show the entire file when a match is found.',
+                        dest='showFullFile', action='store_true')
     args = parser.parse_args(arguments)
 
     return args
 
+
 def main():
     args = parse_args()
-    init(os.path.join(os.path.expanduser("~"), '.gpgpass'), os.path.join(os.path.expanduser("~"), '.gpgpass', 'gpg-passwords'))
+    init(os.path.join(os.path.expanduser("~"), '.gpgpass'),
+         os.path.join(os.path.expanduser("~"), '.gpgpass', 'gpg-passwords'))
     searchThruFiles(args.searchText, args.showFullFile)
 
 if __name__ == "__main__":
