@@ -1,6 +1,7 @@
 # Gpgpass
 [![Build Status](https://travis-ci.org/rvdh/gpgpass.svg?branch=master)](https://travis-ci.org/rvdh/gpgpass)
 [![Coverage Status](https://coveralls.io/repos/rvdh/gpgpass/badge.png)](https://coveralls.io/r/rvdh/gpgpass)
+[ ![Codeship Status for rvdh/gpgpass](https://www.codeship.io/projects/e56e6b80-2c5a-0132-64c8-1a021f7da059/status)](https://www.codeship.io/projects/38817)
 
 The goal of this tool is to provide an easy but safe way to share passwords amongst (groups of) co-workers.
 It does this by keeping a local GIT repository in sync with a remote. Changes to password files are automatically pulled to the local repository.
